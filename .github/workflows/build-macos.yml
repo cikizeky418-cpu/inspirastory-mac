@@ -2,6 +2,9 @@
 # Runner: macOS ARM64 (Apple Silicon). FREE tier GitHub Actions.
 name: Build macOS (.dmg)
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
