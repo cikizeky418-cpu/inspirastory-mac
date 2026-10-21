@@ -93,6 +93,7 @@ STATUS_CETAK = ['diproses', 'selesai', 'diambil']
 BG = '#0d0d0d'
 BG2 = '#161616'
 BG3 = '#202020'
+BORDER = '#2e2a1e'
 FG = '#f7f4ec'
 GOLD = '#c8a24a'
 GOLD2 = '#e6c876'
@@ -175,16 +176,19 @@ class App:
         s.configure('.', background=BG, foreground=FG, fieldbackground=BG2,
                     font=(FONT_UI, 10))
         s.configure('TFrame', background=BG)
-        s.configure('Card.TFrame', background=BG2, relief='flat')
+        s.configure('Card.TFrame', background='#1b1b1b', relief='solid',
+                    borderwidth=1, bordercolor=BORDER)
         s.configure('TLabel', background=BG, foreground=FG, font=(FONT_UI, 10))
-        s.configure('Card.TLabel', background=BG2, foreground=FG)
+        s.configure('Card.TLabel', background='#1b1b1b', foreground=FG)
         s.configure('Muted.TLabel', background=BG, foreground=MUTED, font=(FONT_UI, 9))
-        s.configure('CardMuted.TLabel', background=BG2, foreground=MUTED, font=(FONT_UI, 9))
+        s.configure('CardMuted.TLabel', background='#1b1b1b', foreground=MUTED,
+                    font=(FONT_UI, 9))
         s.configure('Title.TLabel', background=BG, foreground=GOLD2,
                     font=(FONT_UI, 16, 'bold'))
-        s.configure('CardTitle.TLabel', background=BG2, foreground=GOLD2,
-                    font=(FONT_UI, 12, 'bold'))
-        s.configure('Big.TLabel', background=BG2, foreground=FG, font=(FONT_UI, 18, 'bold'))
+        s.configure('CardTitle.TLabel', background='#1b1b1b', foreground=GOLD2,
+                    font=(FONT_UI, 13, 'bold'))
+        s.configure('Big.TLabel', background='#1b1b1b', foreground=FG,
+                    font=(FONT_UI, 24, 'bold'))
         s.configure('TButton', background=BG3, foreground=FG, font=(FONT_UI, 10),
                     padding=8, borderwidth=0)
         s.map('TButton', background=[('active', '#333333')], foreground=[('active', GOLD2)])
@@ -204,8 +208,8 @@ class App:
               foreground=[('selected', GOLD2)])
         s.configure('TNotebook', background=BG, borderwidth=0)
         s.configure('TNotebook.Tab', background=BG3, foreground=MUTED,
-                    font=(FONT_UI, 10, 'bold'), padding=(14, 8))
-        s.map('TNotebook.Tab', background=[('selected', BG2)],
+                    font=(FONT_UI, 10, 'bold'), padding=(12, 8))
+        s.map('TNotebook.Tab', background=[('selected', '#2a2417')],
               foreground=[('selected', GOLD2)])
         s.configure('TProgressbar', background=GOLD, troughcolor=BG3, borderwidth=0)
         s.configure('TCheckbutton', background=BG, foreground=FG)
@@ -259,15 +263,19 @@ class App:
         for w in self.root.winfo_children():
             w.destroy()
         # header
-        hdr = ttk.Frame(self.root, padding=(16, 10))
+        hdr = ttk.Frame(self.root, padding=(18, 12))
         hdr.pack(fill='x')
-        ttk.Label(hdr, text='INSPIRASTORY', style='Title.TLabel').pack(side='left')
+        brand = ttk.Label(hdr, text='— INSPIRASTORY —', background=BG,
+                          foreground=GOLD2, font=(FONT_SERIF, 22))
+        brand.pack(side='left')
         self.net_lbl = ttk.Label(hdr, text='...', style='Muted.TLabel')
         self.net_lbl.pack(side='right', padx=(12, 0))
-        ttk.Button(hdr, text='Sinkronisasi', command=self.do_sync).pack(side='right')
+        ttk.Button(hdr, text='Sinkronisasi', style='Gold.TButton',
+                   command=self.do_sync).pack(side='right')
         ttk.Label(hdr, text='%s (%s)' % (self.user['name'], self.user['role']),
                   style='Muted.TLabel').pack(side='right', padx=12)
         ttk.Button(hdr, text='Keluar', command=self._build_login).pack(side='right')
+        tk.Frame(self.root, bg='#3a2f18', height=2).pack(fill='x', padx=18)
         # notebook
         self.nb = ttk.Notebook(self.root)
         self.nb.pack(fill='both', expand=True, padx=12, pady=(0, 12))
@@ -296,7 +304,7 @@ class App:
 
     # ------------------------------ util GUI ------------------------------
     def card(self, parent, title=None):
-        c = ttk.Frame(parent, style='Card.TFrame', padding=14)
+        c = ttk.Frame(parent, style='Card.TFrame', padding=18)
         if title:
             ttk.Label(c, text=title, style='CardTitle.TLabel').pack(anchor='w', pady=(0, 10))
         return c
@@ -511,7 +519,9 @@ class App:
             for w in (e_j, e_h):
                 w.bind('<KeyRelease>', lambda e: calc())
             cb.bind('<<ComboboxSelected>>', lambda e: calc())
-            calc()
+            # JANGAN panggil calc() di sini: lbl_total/lbl_sisa/e_dp belum dibuat
+            # saat add_item() dipanggil pertama kali (form build) -> NameError.
+            # calc() dipanggil eksplisit di akhir form setelah semua widget ada.
 
         def calc():
             total = 0
@@ -544,6 +554,7 @@ class App:
         lbl_sisa.pack(side='left', padx=8)
         e_dp = self.entry_row(body, 'DP Dibayar (Rp)', r.get('dpDibayar', 0) or 0)
         e_dp.bind('<KeyRelease>', lambda e: calc())
+        calc()  # hitung awal setelah semua widget (lbl_total/lbl_sisa/e_dp) ada
 
         def save():
             nama = e_nama.get().strip()
