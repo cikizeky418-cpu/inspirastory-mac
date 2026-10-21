@@ -1,0 +1,73 @@
+# Build otomatis aplikasi macOS InspiraStory (.dmg)
+# Runner: macOS ARM64 (Apple Silicon). FREE tier GitHub Actions.
+name: Build macOS (.dmg)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14  # ARM64 (M1/M2/M3). Intel tidak didukung build ini.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyInstaller
+        run: pip install --upgrade pip pyinstaller
+
+      - name: Verifikasi tkinter tersedia
+        run: python3 -c "import tkinter; print('Tk OK', tkinter.TkVersion)"
+
+      - name: Build .app dengan PyInstaller
+        run: |
+          pyinstaller --noconfirm --clean --windowed \
+            --name "InspiraStory" \
+            --osx-bundle-identifier "com.inspirastory.app" \
+            --add-data "firebase_config.json:." \
+            app.py
+          ls -la dist/
+
+      - name: Verifikasi bundle
+        run: |
+          test -d "dist/InspiraStory.app" || (echo "InspiraStory.app tidak ditemukan" && exit 1)
+          file "dist/InspiraStory.app/Contents/MacOS/InspiraStory"
+          du -sh "dist/InspiraStory.app"
+
+      - name: Buat .dmg
+        run: |
+          hdiutil create \
+            -volname "InspiraStory" \
+            -srcfolder "dist/InspiraStory.app" \
+            -ov -format UDZO \
+            "dist/InspiraStory.dmg"
+          ls -la dist/InspiraStory.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InspiraStory-macOS-ARM64
+          path: dist/InspiraStory.dmg
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: "InspiraStory v1.0 (macOS ARM64)"
+          body: |
+            Aplikasi desktop InspiraStory untuk macOS (Apple Silicon).
+
+            Cara install:
+            1. Download InspiraStory.dmg
+            2. Buka → seret InspiraStory ke Applications
+            3. Klik kanan → Open saat pertama kali dibuka (aplikasi unsigned)
+
+            Login awal: username `admin` + password yang diberikan terpisah.
+            Segera ganti password di menu Pengaturan.
+          files: dist/InspiraStory.dmg
