@@ -59,6 +59,8 @@ LAYANAN = [
     ('undangan-fisik', 'Undangan Fisik'),
     ('prewedding', 'Prewedding'),
     ('wedding', 'Wedding'),
+    ('foto-only', 'Foto Only'),
+    ('video-only', 'Video Only'),
     ('ultah', 'Ulang Tahun'),
     ('keluarga', 'Foto Keluarga'),
     ('grup', 'Foto Grup'),
