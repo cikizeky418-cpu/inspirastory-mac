@@ -148,6 +148,8 @@ def nama_bulan(mk):
 class App:
     def __init__(self, root):
         self.root = root
+        # Tampilkan error tkinter sebagai dialog (jangan diam saja) agar bisa didiagnosis
+        self.root.report_callback_exception = self._show_tk_error
         self.root.title(APP_NAME)
         self.root.geometry('1120x700')
         self.root.minsize(1000, 620)
@@ -158,6 +160,14 @@ class App:
         self.online = None
         self._style()
         self._build_login()
+
+    def _show_tk_error(self, exc, val, tb):
+        import traceback
+        msg = ''.join(traceback.format_exception(exc, val, tb))[-800:]
+        try:
+            messagebox.showerror('Terjadi kesalahan', msg)
+        except Exception:
+            pass
 
     def _load_cfg(self):
         for p in (CFG_PATH, resource_path('firebase_config.json')):
@@ -178,8 +188,12 @@ class App:
         s.configure('.', background=BG, foreground=FG, fieldbackground=BG2,
                     font=(FONT_UI, 10))
         s.configure('TFrame', background=BG)
-        s.configure('Card.TFrame', background='#1b1b1b', relief='solid',
-                    borderwidth=1, bordercolor=BORDER)
+        try:
+            s.configure('Card.TFrame', background='#1b1b1b', relief='solid',
+                        borderwidth=1, bordercolor=BORDER)
+        except Exception:
+            # tema tidak mendukung bordercolor -> fallback tanpa border
+            s.configure('Card.TFrame', background='#1b1b1b', relief='flat')
         s.configure('TLabel', background=BG, foreground=FG, font=(FONT_UI, 10))
         s.configure('Card.TLabel', background='#1b1b1b', foreground=FG)
         s.configure('Muted.TLabel', background=BG, foreground=MUTED, font=(FONT_UI, 9))
