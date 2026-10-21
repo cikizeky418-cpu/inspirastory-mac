@@ -1,2 +1,17 @@
 # rahasia lokal — JANGAN PERNAH di-commit
 .admin-secret.txt
+*.db
+*.db-journal
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# pyinstaller
+build/
+dist/
+*.spec
+
+# macOS
+.DS_Store
